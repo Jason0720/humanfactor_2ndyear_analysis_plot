@@ -12,7 +12,7 @@ average,variance,x_name,bar_name
 1.25974026,0.284106773,"S108, S208",downward
 ,,,
 1.107142857,0.109004188,"S104, S204",forward
-2.38961039,1.157155548,"S109, S209",forward+upward+downward+pitch
+2.38961039,1.157155548,"S109, S209",forward+pitch
 1.545454545,0.489783832,"S110, S210",forward+roll+yaw
 1.948051948,0.876771437,"S111, S211",forward+roll+yaw+pitch
 ,,,
@@ -44,3 +44,5 @@ average,variance,x_name,bar_name
 ,,,
 1.532467532,0.591958813,S001-S008,controllable
 1.974837662,1.048107204,"S210, S219-S225",uncontrollable
+,,,
+end,,,
