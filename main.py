@@ -1,18 +1,17 @@
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 
-# get graph data
-def get_graph_data():
-    graph_data_path = "data_graph.csv"
-    with open(graph_data_path) as f:
+# get plot data
+def get_plot_data():
+    plot_data_path = "data_plot.csv"
+    with open(plot_data_path) as f:
         # read csv file
         reader = csv.reader(f)
         _ = next(reader)
 
         # data
-        graph_data = []
+        plot_data = []
         temp_data = []
 
         # get data from csv
@@ -20,11 +19,11 @@ def get_graph_data():
             if not row[0] == '':
                 temp_data.append(row)
             else:
-                graph_data.append(temp_data.copy())
+                plot_data.append(temp_data.copy())
                 temp_data.clear()
 
-        print("graph data: {}".format(graph_data))
-        return graph_data
+        print("plot data: {}".format(plot_data))
+        return plot_data
 
 def get_p_value_data():
     p_value_data_path = "data_p_value.csv"
@@ -48,7 +47,7 @@ def get_p_value_data():
         print("p-value data: {}".format(p_value_data))
         return p_value_data
 
-def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, dh=.03, barh=.03, fs=None, maxasterix=None):
+def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, dh=0.03, barh=0.03, fs=None, maxasterix=None):
     """
     Annotate barplot with p-values.
 
@@ -68,15 +67,18 @@ def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, dh=.0
         text = data
     else:
         # * is p < 0.05
-        # ** is p < 0.005
-        # *** is p < 0.0005
+        # ** is p < 0.01
+        # *** is p < 0.001
         # etc.
         text = ''
-        p = .05
+        p = 0.05
+        if data < p:
+            text += '*'
 
+        p = 0.01
         while data < p:
             text += '*'
-            p /= 10.
+            p /= 10.0
 
             if maxasterix and len(text) == maxasterix:
                 break
@@ -101,18 +103,18 @@ def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, dh=.0
     bary = [y, y+barh, y+barh, y]
     mid = ((lx+rx)/2, y+barh)
 
-    plt.plot(barx, bary, c='black')
+    plt.plot(barx, bary, c='#9400d3')
 
-    kwargs = dict(ha='center', va='bottom', weight='bold')
+    kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3')
     if fs is not None:
         kwargs['fontsize'] = fs
 
     plt.text(*mid, text, **kwargs)
 
-def barplot_label(barplot):
+def barplot_value_label(barplot):
     for bar in barplot:
         height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2.0, 0.5 * height, height, ha='center', va='bottom', fontweight='bold')
+        plt.text(bar.get_x() + bar.get_width() / 2.0, 0.3 * height, height, ha='center', va='bottom', fontweight='bold')
 
 def get_bar_list(barplot):
     list = []
@@ -120,31 +122,31 @@ def get_bar_list(barplot):
         list.append(bar)
     return list
 
-def draw_chart(graph_data, p_value_data):
+def draw_chart(plot_data, p_value_data):
     # check data size
-    graph_data_len = len(graph_data)
+    plot_data_len = len(plot_data)
     p_value_data_len = len(p_value_data)
-    if not graph_data_len == p_value_data_len:
+    if not plot_data_len == p_value_data_len:
         print("data size does not match.")
         return
 
     # retrieve
-    for chart_idx, chart in enumerate(graph_data):
-        # get graph data
+    for chart_idx, chart in enumerate(plot_data):
+        # get plot data
         average = []
         variance = []
         material = []
         legend_name = []
         for in_data in chart:
             average.append(round(float(in_data[0]), 6))
-            variance.append(round(float(in_data[1])/2.0, 6))
+            variance.append(round(float(in_data[1])**0.5, 6))
             material.append(in_data[2])
             legend_name.append(in_data[3])
-        x_pos = np.arange(len(material))
+        x_pos = np.arange(len(material)).tolist()
 
         # create error bar plot
         plt.figure()
-        barplot = plt.bar(x_pos, average, yerr=variance, color=['#fa8072', '#90ee90', '#87ceeb', '#ffd700'], align='center', capsize=5)
+        barplot = plt.bar(x_pos, average, yerr=variance, color=['#fa8072', '#90ee90', '#87ceeb', '#ffd700'], align='center', capsize=3)
         plt.xlabel('Scene indices', fontsize=12, fontweight='bold')
         plt.ylabel('Mean Opinion Score', fontsize=10, fontweight='bold')
         plt.ylim(0, 5)
@@ -153,23 +155,46 @@ def draw_chart(graph_data, p_value_data):
         plt.grid(alpha=0.5)
         plt.legend(get_bar_list(barplot), legend_name, loc=1, prop={'size': 12})
 
-        # insert p-value graph
+        # insert p-value plot
+        p_value_plot_height = 0.03
         for p_data_idx, p_data in enumerate(p_value_data[chart_idx]):
-            height = .03
-            if not p_data_idx == 0:
-                height = p_data_idx * .1
-            barplot_annotate_brackets(int(p_data[0]), int(p_data[1]), float(p_data[2]), x_pos, average, yerr=variance, dh=height, maxasterix=3)
+            # custom value
+            # height
+            if p_data_idx == 0:
+                if chart_idx == 0 :
+                    p_value_plot_height = -0.2
+                elif chart_idx == 3:
+                    p_value_plot_height = -0.15
+            else:
+                if chart_idx == 3:
+                    if p_data_idx == 1:
+                        p_value_plot_height += 0.1
+                    elif p_data_idx == 2:
+                        p_value_plot_height += 0.3
+                else:
+                    p_value_plot_height += 0.15
+
+            # auto value
+            # width
+            x_pos_scale = x_pos.copy()
+            num1 = int(p_data[0])
+            num2 = int(p_data[1])
+            x_pos_scale[num1] += 0.1
+            x_pos_scale[num2] -= 0.1
+
+            # insert annotate brackets
+            barplot_annotate_brackets(num1, num2, float(p_data[2]), x_pos_scale, average, yerr=variance, dh=p_value_plot_height, maxasterix=3)
 
         # insert barplot data label
-        barplot_label(barplot)
+        barplot_value_label(barplot)
 
         # save figure
         plt.savefig("plot_{}.png".format(chart_idx), dpi=300)
         plt.show()
-
+        a = 0
 
 # main
 if __name__ == '__main__':
-    graph_data = get_graph_data()
+    plot_data = get_plot_data()
     p_value_data = get_p_value_data()
-    draw_chart(graph_data, p_value_data)
+    draw_chart(plot_data, p_value_data)
