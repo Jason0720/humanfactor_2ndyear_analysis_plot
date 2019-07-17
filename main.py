@@ -247,15 +247,82 @@ def draw_session_plot(session_plot_data, session_p_value_data):
         plt.savefig("./figure/session_plot_{}.png".format(session_idx), dpi=300)
         plt.show()
 
+def draw_ssq_plot():
+    # set data
+    x_label = ['Rest', 'Session1', 'Session 2', 'Session 3']
+    x_material = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
+
+    x_pos = np.arange(len(x_label))
+    under_30 = [[9.321, 21.694, 15.680, 18.571],
+                [7.018, 13.505, 21.280, 15.132],
+                [16.448, 22.043, 34.240, 26.524],
+                [33.445, 34.502, 58.720, 45.912]]
+    upper_30 = [[7.281, 16.756, 17.217, 15.747],
+                [27.616, 26.131, 54.581, 38.384],
+                [24.854, 26.131, 46.888, 35.235],
+                [29.875, 24.934, 54.947, 38.778]]
+    upper_error = [[1.694155289, 2.328995977, 3.051727685, 2.455390913],
+                   [6.881550702, 5.444572, 11.21568042, 8.207618539],
+                   [4.698759009, 4.285391819, 7.561152367, 5.723901607],
+                   [5.552840516, 4.626641382, 9.550828326, 6.604742974]]
+    under_error = [[1.665806139, 2.684244972, 3.801622064, 2.684373347],
+                   [1.096934175, 1.980647987, 3.094156533, 2.067204269],
+                   [2.677546155, 2.127234873, 3.881021203, 2.801211577],
+                   [4.391940919, 3.541785169, 6.7758916, 5.051116455]]
+
+    # loop
+    for i in range(4):
+        # create error bar plot
+        plt.figure()
+        under_30_barplot = plt.bar(x_pos - 0.15, under_30[i], yerr=under_error[i], color='#ffd700', align='center',
+                                   capsize=3, tick_label=x_material, label='Under 30', width=0.3)
+        upper_30_barplot = plt.bar(x_pos + 0.15, upper_30[i], yerr=upper_error[i], color='#808080', align='center',
+                                   capsize=3, tick_label=x_material, label='Upper 30', width=0.3)
+        plt.xlabel(x_label[i], fontsize=12, fontweight='bold')
+        plt.ylabel('SSQ score', fontsize=14, fontweight='bold')
+        plt.ylim(0, 80)
+        plt.xticks(x_pos, x_material, color='k')
+        plt.yticks([i * 20 for i in range(0, 5)])
+        plt.grid(alpha=0.5)
+        plt.legend(loc=1, prop={'size': 12})
+
+        # insert p-value plot
+        if i == 1:
+            for j in range(4):
+                p_value = "***"
+                if j == 1:
+                    p_value = "**"
+
+                lx = j - 0.2
+                rx = j + 0.2
+                barx = [lx, lx, rx, rx]
+                y = max(under_30[i][j] + under_error[i][j], upper_30[i][j] + upper_error[i][j]) + 2
+                barh = 3
+                bary = [y, y + barh, y + barh, y]
+                mid = ((lx + rx) / 2, y + barh)
+                plt.plot(barx, bary, c='#9400d3')
+
+                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=14)
+
+                plt.text(*mid, p_value, **kwargs)
+
+        # save figure
+        plt.savefig("./figure/ssq_plot_{}.png".format(i), dpi=300)
+        plt.show()
+
 
 # main
 if __name__ == '__main__':
     # scene
     scene_plot_data = get_data_from_csv("scene_plot_data.csv")
     scene_p_value_data = get_data_from_csv("scene_p_value_data.csv")
-    #draw_scene_plot(scene_plot_data, scene_p_value_data)
+    draw_scene_plot(scene_plot_data, scene_p_value_data)
 
     # session
     session_plot_data = get_data_from_csv("session_plot_data.csv")
     session_p_value_data = get_data_from_csv("session_p_value_data.csv")
     draw_session_plot(session_plot_data, session_p_value_data)
+
+    # SSQ
+    draw_ssq_plot()
+
