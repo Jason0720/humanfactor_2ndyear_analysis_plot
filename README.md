@@ -6,8 +6,7 @@
 - project
   ├ main.py
   ├ figure (result figure)
-  ├ original data (original data csv)
-  ├ # csv files
+  ├ data (using csv data)
   ├ .gitattributes
   ├ .gitignore
   └ README.md

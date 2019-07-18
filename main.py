@@ -316,7 +316,7 @@ def draw_ssq_plot():
 
 def draw_ssq_33_group_plot():
     # read data from csv
-    csv_file = '33_infomation_for_graph_NODT.csv'
+    csv_file = './data/33_infomation_for_graph_NODT.csv'
     data = np.genfromtxt(csv_file, delimiter=',')
     x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
     legend_name = ['$S_{MSSQ,A}$', '$S_{MSSQ,B}$', '$S_{MSSQ}$']
@@ -402,13 +402,13 @@ def draw_ssq_33_group_plot():
 # main
 if __name__ == '__main__':
     # scene
-    scene_plot_data = get_data_from_csv("scene_plot_data.csv")
-    scene_p_value_data = get_data_from_csv("scene_p_value_data.csv")
+    scene_plot_data = get_data_from_csv("./data/scene_plot_data.csv")
+    scene_p_value_data = get_data_from_csv("./data/scene_p_value_data.csv")
     draw_scene_plot(scene_plot_data, scene_p_value_data)
 
     # session
-    session_plot_data = get_data_from_csv("session_plot_data.csv")
-    session_p_value_data = get_data_from_csv("session_p_value_data.csv")
+    session_plot_data = get_data_from_csv("./data/session_plot_data.csv")
+    session_p_value_data = get_data_from_csv("./data/session_p_value_data.csv")
     draw_session_plot(session_plot_data, session_p_value_data)
 
     # SSQ
