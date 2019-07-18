@@ -22,8 +22,6 @@ def get_data_from_csv(path):
                 raw_data.append(temp_data.copy())
                 temp_data.clear()
 
-        print("get data from {}".format(path))
-        print(raw_data)
         return raw_data
 
 #######################
@@ -176,7 +174,9 @@ def draw_scene_plot(scene_plot_data, scene_p_value_data):
 
         # save figure
         plt.savefig("./figure/scene_plot_{}.png".format(scene_idx), dpi=300)
-        plt.show()
+        print("save image = ./figure/scene_plot_{}.png".format(scene_idx))
+        # plt.show()
+        plt.close('all')
 
 ###################
 # draw session plot
@@ -245,7 +245,9 @@ def draw_session_plot(session_plot_data, session_p_value_data):
 
         # save figure
         plt.savefig("./figure/session_plot_{}.png".format(session_idx), dpi=300)
-        plt.show()
+        print("save image = ./figure/session_plot_{}.png".format(session_idx))
+        # plt.show()
+        plt.close('all')
 
 def draw_ssq_plot():
     # set data
@@ -308,7 +310,93 @@ def draw_ssq_plot():
 
         # save figure
         plt.savefig("./figure/ssq_plot_{}.png".format(i), dpi=300)
-        plt.show()
+        print("save image = ./figure/ssq_plot_{}.png".format(i))
+        # plt.show()
+        plt.close('all')
+
+def draw_ssq_33_group_plot():
+    # read data from csv
+    csv_file = '33_infomation_for_graph_NODT.csv'
+    data = np.genfromtxt(csv_file, delimiter=',')
+    x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
+    legend_name = ['$S_{MSSQ,A}$', '$S_{MSSQ,B}$', '$S_{MSSQ}$']
+    y_label = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
+    n_groups = len(y_label)
+    index = np.arange(n_groups)
+
+    # set data list
+    aver_mat = data[0:9, :]
+    err_mat = data[9:18, :]
+
+    # loop
+    for i in range(int(len(aver_mat) / 3)):
+        for j in range(int(len(aver_mat[0]) / 4)):
+            # create error bar plot
+            plt.figure()
+            plt.bar(index - 0.3, aver_mat[i * 3][j * 4:j * 4 + 4], tick_label=x_material, width=0.3,
+                    yerr=err_mat[i * 3][j * 4:j * 4 + 4], label=legend_name[i] + ' lower 1/3 group',
+                    color='#90ee90', capsize=3, align='center')
+            plt.bar(index, aver_mat[i * 3 + 1][j * 4:j * 4 + 4], tick_label=x_material, width=0.3,
+                    yerr=err_mat[i * 3 + 1][j * 4:j * 4 + 4], label=legend_name[i] + ' middle 1/3 group',
+                    color='#00ced1', capsize=3, align='center')
+            plt.bar(index + 0.3, aver_mat[i * 3 + 2][j * 4:j * 4 + 4], tick_label=x_material, width=0.3,
+                    yerr=err_mat[i * 3 + 2][j * 4:j * 4 + 4], label=legend_name[i] + ' upper 1/3 group',
+                    color='#0000cd', capsize=3, align='center')
+            plt.ylim(0, 150)
+            plt.xticks(index, x_material, color='k')
+            plt.yticks([i * 25 for i in range(0, 7)])
+            plt.ylabel(y_label[j], fontsize=14, fontweight='bold')
+            plt.grid(alpha=0.5)
+            plt.legend(loc=1, prop={'size': 12})
+
+            # insert p-value plot
+            # set p-value data
+            p_value_list = [[[1, 0, 2, '**']],
+                            [[1, 0, 1, '***'], [1, 0, 2, '***'], [2, 0, 1, '**'], [2, 0, 2, '***']],
+                            [[1, 0, 1, '*'], [1, 0, 2, '*']],
+                            [[1, 0, 1, '**'], [1, 0, 2, '**'], [2, 0, 2, '*']],
+                            [[0, 0, 2, '**']],
+                            [[0, 1, 2, '**'], [0, 0, 2, '**'], [1, 0, 2, '*'], [2, 0, 1, '*'], [2, 0, 2, '***'], [3, 0, 2, '***']],
+                            [[1, 0, 2, '*'], [2, 0, 2, '**'], [3, 0, 2, '**']],
+                            [[0, 1, 2, '*'], [0, 0, 2, '**'], [1, 0, 2, '*'], [2, 0, 2, '**'], [3, 0, 2, '**']],
+                            [[0, 1, 2, '*'], [0, 0, 2, '*'], [1, 1, 2, '*']],
+                            [[0, 1, 2, '**'], [0, 0, 2, '*'], [1, 0, 2, '**'], [2, 0, 1, '*'], [2, 0, 2, '***'], [3, 0, 2, '**']],
+                            [[0, 1, 2, '*'], [1, 1, 2, '*'], [1, 0, 2, '*'], [2, 0, 2, '*'], [3, 0, 2, '*']],
+                            [[0, 1, 2, '**'], [0, 0, 2, '*'], [1, 1, 2, '*'], [1, 0, 2, '*'], [2, 0, 2, '**'], [3, 0, 2, '*']]]
+
+            tmp_x_index = -1
+            mult_num = 0
+            for p_value in p_value_list[i * 4 + j]:
+                # x value
+                x_index = p_value[0]
+                if tmp_x_index == x_index:
+                    mult_num += 1
+                else:
+                    mult_num = 0
+                tmp_x_index = x_index
+                lx = x_index - 0.3 + p_value[1] * 0.3
+                rx = x_index - 0.3 + p_value[2] * 0.3
+                text = p_value[3]
+                barx = [lx, lx, rx, rx]
+
+                # y value
+                y = max(aver_mat[i * 3 + p_value[1]][j * 4 + x_index] + err_mat[i * 3 + p_value[1]][j * 4 + x_index],
+                    aver_mat[i * 3 + p_value[2]][j * 4 + x_index] + err_mat[i * 3 + p_value[2]][j * 4 + x_index]) + 5 + mult_num * 10
+                barh = 5
+                bary = [y, y + barh, y + barh, y]
+
+                mid = ((lx + rx) / 2, y + barh)
+                plt.plot(barx, bary, c='#9400d3')
+
+                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=10)
+
+                plt.text(*mid, text, **kwargs)
+
+            # save figure
+            plt.savefig("./figure/ssq_33_group_plot_{}.png".format(i * 4 + j), dpi=300)
+            print("save image = ./figure/ssq_33_group_plot_{}.png".format(i * 4 + j))
+            # plt.show()
+            plt.close('all')
 
 
 # main
@@ -325,4 +413,7 @@ if __name__ == '__main__':
 
     # SSQ
     draw_ssq_plot()
+
+    # SSQ_33_group
+    draw_ssq_33_group_plot()
 
