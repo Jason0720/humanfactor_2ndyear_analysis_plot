@@ -24,6 +24,12 @@
   * `4` files ('session_plot_index.png')
 * ssq_plot
   * X_axis = SSQ score / Y_axis = SSQ symptoms
+  * Group = under 30 / upper 30
   * manual data input (not from csv)
   * `4` files ('ssq_plot_index.png')
+ * ssq_33_group_plot
+  * X_axis = Session / Y_axis SSQ score by symptoms ()
+  * Group = MSSQ low / middle / upper
+  * from csv / manual p-value data input
+   * `12` files ('ssq_33_group_plot_index.png')
   
