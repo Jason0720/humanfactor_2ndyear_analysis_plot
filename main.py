@@ -194,7 +194,7 @@ def draw_session_plot(session_plot_data, session_p_value_data):
         # get plot data
         average = []
         stdev = []
-        x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
+        x_material = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
         for in_data in session:
             average.append(round(float(in_data[0]), 6))
             stdev.append(round(float(in_data[1]) ** 0.5, 6))
@@ -251,7 +251,7 @@ def draw_session_plot(session_plot_data, session_p_value_data):
 
 def draw_ssq_plot():
     # set data
-    x_label = ['Rest', 'Session1', 'Session 2', 'Session 3']
+    x_label = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
     x_material = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
 
     x_pos = np.arange(len(x_label))
@@ -318,7 +318,7 @@ def draw_ssq_33_group_plot():
     # read data from csv
     csv_file = './data/33_infomation_for_graph_NODT.csv'
     data = np.genfromtxt(csv_file, delimiter=',')
-    x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
+    x_material = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
     legend_name = ['$S_{MSSQ,A}$', '$S_{MSSQ,B}$', '$S_{MSSQ}$']
     y_label = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
     n_groups = len(y_label)
