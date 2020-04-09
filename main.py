@@ -2,7 +2,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
-################
+###################
 # get data from csv
 def get_data_from_csv(path):
     with open(path) as f:
@@ -92,10 +92,10 @@ def draw_barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, 
     plt.text(*mid, text, **kwargs)
 
 # draw bar value on bar
-def draw_barplot_value_label(barplot):
+def draw_barplot_value_label(barplot, fontsize, digits):
     for bar in barplot:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2.0, 0.3 * height, height, ha='center', va='bottom', fontweight='bold')
+        height = round(bar.get_height(), digits)
+        plt.text(bar.get_x() + bar.get_width() / 2.0, 0.3 * height, height, ha='center', va='bottom', fontweight='bold', fontsize=fontsize)
 
 # get bar list
 def get_bar_list(barplot):
@@ -104,83 +104,9 @@ def get_bar_list(barplot):
         list.append(bar)
     return list
 
-#################
-# draw scene plot
-def draw_scene_plot(scene_plot_data, scene_p_value_data):
-    # check data size
-    scene_plot_data_len = len(scene_plot_data)
-    scene_p_value_data_len = len(scene_p_value_data)
-    if not scene_plot_data_len == scene_p_value_data_len:
-        print("data size does not match.")
-        return
-
-    # retrieve
-    for scene_idx, scene in enumerate(scene_plot_data):
-        # get plot data
-        average = []
-        stdev = []
-        x_material = []
-        legend_name = []
-        for in_data in scene:
-            average.append(round(float(in_data[0]), 6))
-            stdev.append(round(float(in_data[1])**0.5, 6))
-            x_material.append(in_data[2])
-            legend_name.append(in_data[3])
-        x_pos = np.arange(len(x_material)).tolist()
-
-        # create error bar plot
-        plt.figure()
-        barplot = plt.bar(x_pos, average, yerr=stdev, color=['#fa8072', '#90ee90', '#87ceeb', '#ffd700'], align='center', capsize=3)
-        plt.xlabel('Scene indices', fontsize=12, fontweight='bold')
-        plt.ylabel('Mean Opinion Score', fontsize=10, fontweight='bold')
-        plt.ylim(0, 5)
-        plt.xticks(x_pos, x_material, color='k')
-        plt.yticks([i*0.5 for i in range(0, 11)])
-        plt.grid(alpha=0.5)
-        plt.legend(get_bar_list(barplot), legend_name, loc=1, prop={'size': 12})
-
-        # insert p-value plot
-        p_value_plot_height = 0.03
-        for p_data_idx, p_data in enumerate(scene_p_value_data[scene_idx]):
-            # custom value
-            # height
-            if p_data_idx == 0:
-                if scene_idx == 0 :
-                    p_value_plot_height = -0.2
-                elif scene_idx == 3:
-                    p_value_plot_height = -0.15
-            else:
-                if scene_idx == 3:
-                    if p_data_idx == 1:
-                        p_value_plot_height += 0.1
-                    elif p_data_idx == 2:
-                        p_value_plot_height += 0.3
-                else:
-                    p_value_plot_height += 0.15
-
-            # auto value
-            # width
-            x_pos_scale = x_pos.copy()
-            num1 = int(p_data[0])
-            num2 = int(p_data[1])
-            x_pos_scale[num1] += 0.1
-            x_pos_scale[num2] -= 0.1
-
-            # insert annotate brackets
-            draw_barplot_annotate_brackets(num1, num2, float(p_data[2]), x_pos_scale, average, yerr=stdev, dh=p_value_plot_height, maxasterix=3)
-
-        # insert barplot data label
-        draw_barplot_value_label(barplot)
-
-        # save figure
-        plt.savefig("./figure/scene_plot_{}.png".format(scene_idx), dpi=300)
-        print("save image = ./figure/scene_plot_{}.png".format(scene_idx))
-        # plt.show()
-        plt.close('all')
-
 ###################
 # draw session plot
-def draw_session_plot(session_plot_data, session_p_value_data):
+def draw_session_plot(session_plot_data, session_p_value_data, x_label_size, y_label_size, x_ticks_size, y_ticks_size, legend_size, p_value_size, value_size, value_digits):
     # check data size
     session_plot_data_len = len(session_plot_data)
     session_p_value_data_len = len(session_p_value_data)
@@ -194,7 +120,7 @@ def draw_session_plot(session_plot_data, session_p_value_data):
         # get plot data
         average = []
         stdev = []
-        x_material = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
+        x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
         for in_data in session:
             average.append(round(float(in_data[0]), 6))
             stdev.append(round(float(in_data[1]) ** 0.5, 6))
@@ -204,10 +130,10 @@ def draw_session_plot(session_plot_data, session_p_value_data):
         plt.figure()
         barplot = plt.bar(x_pos, average, yerr=stdev, color=['#3cb371', '#ffd700', '#ffa500', '#ff0000'],
                           align='center', capsize=3)
-        plt.ylabel(y_label[session_idx], fontsize=16, fontweight='bold')
+        plt.ylabel(y_label[session_idx], fontsize=y_label_size, fontweight='bold')
         plt.ylim(0, 70)
-        plt.xticks(x_pos, x_material, color='k')
-        plt.yticks([i * 10 for i in range(0, 8)])
+        plt.xticks(x_pos, x_material, color='k', fontsize=x_ticks_size)
+        plt.yticks([i * 10 for i in range(0, 8)], fontsize=y_ticks_size)
         plt.grid(alpha=0.5)
 
         # insert p-value plot
@@ -238,10 +164,10 @@ def draw_session_plot(session_plot_data, session_p_value_data):
 
             # insert annotate brackets
             draw_barplot_annotate_brackets(num1, num2, float(p_data[2]), x_pos_scale, average, yerr=stdev,
-                                           dh=p_value_plot_height, fs=14, maxasterix=3)
+                                           dh=p_value_plot_height, fs=p_value_size, maxasterix=3)
 
         # insert barplot data label
-        draw_barplot_value_label(barplot)
+        draw_barplot_value_label(barplot, value_size, value_digits)
 
         # save figure
         plt.savefig("./figure/session_plot_{}.png".format(session_idx), dpi=300)
@@ -249,9 +175,85 @@ def draw_session_plot(session_plot_data, session_p_value_data):
         # plt.show()
         plt.close('all')
 
-def draw_ssq_plot():
+#################
+# draw scene plot
+def draw_scene_plot(scene_plot_data, scene_p_value_data, x_label_size, y_label_size, x_ticks_size, y_ticks_size, legend_size, p_value_size, value_size, value_digits):
+    # check data size
+    scene_plot_data_len = len(scene_plot_data)
+    scene_p_value_data_len = len(scene_p_value_data)
+    if not scene_plot_data_len == scene_p_value_data_len:
+        print("data size does not match.")
+        return
+
+    # retrieve
+    for scene_idx, scene in enumerate(scene_plot_data):
+        # get plot data
+        average = []
+        stdev = []
+        x_material = []
+        legend_name = []
+        for in_data in scene:
+            average.append(round(float(in_data[0]), 6))
+            stdev.append(round(float(in_data[1])**0.5, 6))
+            x_material.append(in_data[2])
+            legend_name.append(in_data[3])
+        x_pos = np.arange(len(x_material)).tolist()
+
+        # create error bar plot
+        plt.figure()
+        barplot = plt.bar(x_pos, average, yerr=stdev, color=['#fa8072', '#90ee90', '#87ceeb', '#ffd700'], align='center', capsize=3)
+        plt.xlabel('Scene indices', fontsize=x_label_size, fontweight='bold')
+        plt.ylabel('Mean Opinion Score', fontsize=y_label_size, fontweight='bold')
+        plt.ylim(0, 5)
+        plt.xticks(x_pos, x_material, color='k', fontsize=x_ticks_size)
+        plt.yticks([i*0.5 for i in range(0, 11)], fontsize=y_ticks_size)
+        plt.grid(alpha=0.5)
+        plt.legend(get_bar_list(barplot), legend_name, loc=1, prop={'size': legend_size})
+
+        # insert p-value plot
+        p_value_plot_height = 0.03
+        for p_data_idx, p_data in enumerate(scene_p_value_data[scene_idx]):
+            # custom value
+            # height
+            if p_data_idx == 0:
+                if scene_idx == 0 :
+                    p_value_plot_height = -0.2
+                elif scene_idx == 3:
+                    p_value_plot_height = -0.15
+            else:
+                if scene_idx == 3:
+                    if p_data_idx == 1:
+                        p_value_plot_height += 0.1
+                    elif p_data_idx == 2:
+                        p_value_plot_height += 0.3
+                else:
+                    p_value_plot_height += 0.15
+
+            # auto value
+            # width
+            x_pos_scale = x_pos.copy()
+            num1 = int(p_data[0])
+            num2 = int(p_data[1])
+            x_pos_scale[num1] += 0.1
+            x_pos_scale[num2] -= 0.1
+
+            # insert annotate brackets
+            draw_barplot_annotate_brackets(num1, num2, float(p_data[2]), x_pos_scale, average, yerr=stdev, dh=p_value_plot_height, fs=p_value_size, maxasterix=3)
+
+        # insert barplot data label
+        draw_barplot_value_label(barplot, value_size, value_digits)
+
+        # save figure
+        plt.savefig("./figure/scene_plot_{}.png".format(scene_idx), dpi=300)
+        print("save image = ./figure/scene_plot_{}.png".format(scene_idx))
+        # plt.show()
+        plt.close('all')
+
+###############
+# draw ssq plot
+def draw_ssq_plot(x_label_size, y_label_size, x_ticks_size, y_ticks_size, legend_size, p_value_size, value_size, value_digits):
     # set data
-    x_label = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
+    x_label = ['Rest', 'Session1', 'Session 2', 'Session 3']
     x_material = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
 
     x_pos = np.arange(len(x_label))
@@ -280,13 +282,13 @@ def draw_ssq_plot():
                                    capsize=3, tick_label=x_material, label='Under 30', width=0.3)
         upper_30_barplot = plt.bar(x_pos + 0.15, upper_30[i], yerr=upper_error[i], color='#808080', align='center',
                                    capsize=3, tick_label=x_material, label='Upper 30', width=0.3)
-        plt.xlabel(x_label[i], fontsize=12, fontweight='bold')
-        plt.ylabel('SSQ score', fontsize=14, fontweight='bold')
+        plt.xlabel(x_label[i], fontsize=x_label_size, fontweight='bold')
+        plt.ylabel('SSQ score', fontsize=y_label_size, fontweight='bold')
         plt.ylim(0, 80)
-        plt.xticks(x_pos, x_material, color='k')
-        plt.yticks([i * 20 for i in range(0, 5)])
+        plt.xticks(x_pos, x_material, color='k', fontsize=x_ticks_size)
+        plt.yticks([i * 20 for i in range(0, 5)], fontsize=y_ticks_size)
         plt.grid(alpha=0.5)
-        plt.legend(loc=1, prop={'size': 12})
+        plt.legend(loc=1, prop={'size': legend_size})
 
         # insert p-value plot
         if i == 1:
@@ -304,7 +306,7 @@ def draw_ssq_plot():
                 mid = ((lx + rx) / 2, y + barh)
                 plt.plot(barx, bary, c='#9400d3')
 
-                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=14)
+                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=p_value_size)
 
                 plt.text(*mid, p_value, **kwargs)
 
@@ -314,11 +316,13 @@ def draw_ssq_plot():
         # plt.show()
         plt.close('all')
 
-def draw_ssq_33_group_plot():
+#######################
+# draw ssq 3 group plot
+def draw_ssq_33_group_plot(x_label_size, y_label_size, x_ticks_size, y_ticks_size, legend_size, p_value_size, value_size, value_digits):
     # read data from csv
     csv_file = './data/33_infomation_for_graph_NODT.csv'
     data = np.genfromtxt(csv_file, delimiter=',')
-    x_material = ['Rest', '$C_{CU}$', '$C_{UA}$', '$C_{UU}$']
+    x_material = ['Rest', 'Session1', 'Session 2', 'Session 3']
     legend_name = ['$S_{MSSQ,A}$', '$S_{MSSQ,B}$', '$S_{MSSQ}$']
     y_label = ['$S_N$', '$S_O$', '$S_D$', '$S_T$']
     n_groups = len(y_label)
@@ -343,11 +347,11 @@ def draw_ssq_33_group_plot():
                     yerr=err_mat[i * 3 + 2][j * 4:j * 4 + 4], label=legend_name[i] + ' upper 1/3 group',
                     color='#0000cd', capsize=3, align='center')
             plt.ylim(0, 150)
-            plt.xticks(index, x_material, color='k')
-            plt.yticks([i * 25 for i in range(0, 7)])
-            plt.ylabel(y_label[j], fontsize=14, fontweight='bold')
+            plt.xticks(index, x_material, color='k', fontsize=x_ticks_size)
+            plt.yticks([i * 25 for i in range(0, 7)], fontsize=y_ticks_size)
+            plt.ylabel(y_label[j], fontsize=y_label_size, fontweight='bold')
             plt.grid(alpha=0.5)
-            plt.legend(loc=1, prop={'size': 12})
+            plt.legend(loc=1, prop={'size': legend_size})
 
             # insert p-value plot
             # set p-value data
@@ -388,7 +392,7 @@ def draw_ssq_33_group_plot():
                 mid = ((lx + rx) / 2, y + barh)
                 plt.plot(barx, bary, c='#9400d3')
 
-                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=10)
+                kwargs = dict(ha='center', va='bottom', weight='bold', color='#9400d3', fontsize=p_value_size)
 
                 plt.text(*mid, text, **kwargs)
 
@@ -401,19 +405,18 @@ def draw_ssq_33_group_plot():
 
 # main
 if __name__ == '__main__':
-    # scene
-    scene_plot_data = get_data_from_csv("./data/scene_plot_data.csv")
-    scene_p_value_data = get_data_from_csv("./data/scene_p_value_data.csv")
-    draw_scene_plot(scene_plot_data, scene_p_value_data)
-
-    # session
+    # session - fig.6
     session_plot_data = get_data_from_csv("./data/session_plot_data.csv")
     session_p_value_data = get_data_from_csv("./data/session_p_value_data.csv")
-    draw_session_plot(session_plot_data, session_p_value_data)
+    draw_session_plot(session_plot_data, session_p_value_data, 0, 20, 15, 15, 0, 15, 18, 2)
 
-    # SSQ
-    draw_ssq_plot()
+    # scene - fig.7
+    scene_plot_data = get_data_from_csv("./data/scene_plot_data.csv")
+    scene_p_value_data = get_data_from_csv("./data/scene_p_value_data.csv")
+    draw_scene_plot(scene_plot_data, scene_p_value_data, 15, 15, 13, 13, 13, 15, 18, 2)
 
-    # SSQ_33_group
-    draw_ssq_33_group_plot()
+    # SSQ - fig.9
+    draw_ssq_plot(20, 20, 15, 15, 15, 15, 0, 0)
 
+    # SSQ_33_group - fig.10
+    draw_ssq_33_group_plot(0, 20, 15, 15, 15, 15, 0, 0)
